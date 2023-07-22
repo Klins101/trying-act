@@ -25,7 +25,7 @@ jobs:
 
       - name: Source setup.bash
         run: |
-          "source /opt/ros/humble/setup.bash && ros2 run --help"
+          source /opt/ros/humble/setup.bash && ros2 run --help
 
       - name: Install Other ROS2 dependencies
         run: |
