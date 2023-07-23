@@ -13,6 +13,21 @@ jobs:
     runs-on: ubuntu-22.04
     strategy :
       fail-fast : false
+      matrix:
+        include:
+          # Normal build (binary)
+          - os: ubuntu-22.04
+            distro: humble
+            build-type: binary
+          # Normal build (source)
+          - os: ubuntu-22.04
+            distro: humble
+            build-type: source
+           
+    env:
+      ROS2_REPOS_FILE_URL: 'https://raw.githubusercontent.com/ros2/ros2/${{ matrix.distro }}/ros2.repos'
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
     steps:
       - name: Checkout
@@ -21,25 +36,17 @@ jobs:
       - name: Setup ROS and install binaries
         uses: ros-tooling/setup-ros@v0.6
         with:
-          required-ros-distributions: humble
+          #required-ros-distributions: ${{ matrix.build-type == 'binary' && matrix.distro || '' }}
+          required-ros-distributions: ${{ matrix.distro }}
+          use-ros2-testing: true
 
-      - name: Source setup.bash
-        run: |
-          source /opt/ros/humble/setup.bash && ros2 run --help
 
-      - name: Install Other ROS2 dependencies
+      - name: Install other dependencies
         run: |
             sudo apt-get update && sudo apt-get install -y \
               libignition-transport8-dev \
-              ros-humble-turtlesim \
 
-      - name: Build ROS 2 dependencies of voidwalking packages 
-        uses : ros-tooling/action-ros-ci@v0.3
-        with:      
-          target-ros2-distro: humble
-          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
-          skip-tests: true
-
-      - run: |
-          ros2 run turtlesim turtlesim_node
-    
+      - name: Source setup.bash
+        run: |
+          source /opt/ros/${{ matrix.distro }}/setup.bash
+          ros2 run demo_nodes_cpp talker
