@@ -20,9 +20,9 @@ jobs:
             distro: humble
             build-type: binary
           # Normal build (source)
-          - os: ubuntu-22.04
-            distro: humble
-            build-type: source
+         # - os: ubuntu-22.04
+          #  distro: humble
+           # build-type: source
            
     env:
       ROS2_REPOS_FILE_URL: 'https://raw.githubusercontent.com/ros2/ros2/${{ matrix.distro }}/ros2.repos'
@@ -45,8 +45,36 @@ jobs:
         run: |
             sudo apt-get update && sudo apt-get install -y \
               libignition-transport8-dev \
+              ignition-fortress \
+              ros-humble-ros-base ros-dev-tools \
+              ros-humble-nav2-msgs \ 
+              ros-humble-nav2-bringup \ 
+              ros-humble-gazebo-ros \
+              ros-humble-navigation2 \
+              ros-humble-turtlebot3* \
+              ros-humble-ros-ign-bridge \
+              ros-humble-rqt-robot-steering \
+              ros-humble-xacro \
+              ros-humble-robot-localization \
+              ros-humble-nmea-msgs \
+              ros-humble-ros-ign \
+              ros-humble-ros-gz-sim
+              ros-humble-tf2-tools \
+              ros-humble-tf-transformations \
+              ros-humble-xacro \
+              pip \
 
       - name: Source setup.bash
         run: |
           source /opt/ros/${{ matrix.distro }}/setup.bash
-          ros2 run demo_nodes_cpp talker
+          
+
+      - name: Build ROS 2 dependencies of voidwalking packages 
+        uses : ros-tooling/action-ros-ci@v0.3
+        with:      
+          package-name: rviz_satellite main mapping nav2_turtlebot3 obstacle_avoidance simulation waypoints void_tests 
+          import-token: ${{ secrets.GITHUB_TOKEN }}
+          target-ros2-distro: humble
+          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos
+          skip-tests: true
+        run: ros2 run demo_nodes_cpp talker
